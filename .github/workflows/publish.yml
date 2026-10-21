@@ -1,4 +1,5 @@
-# Builds the book and publishes it, UNLISTED, on every push to main:
+# Builds the book and publishes it, UNLISTED, on every push to main
+# (at <name>.pages.dev, plus <name>.<domain> if publishing.yml sets one):
 # anyone with the link can read it, but it asks search engines and AI
 # crawlers to stay away, and uses none of your Cloudflare Access seats.
 #
@@ -56,6 +57,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NAME: ${{ steps.settings.outputs.name }}
+          DOMAIN: ${{ steps.settings.outputs.domain }}
         run: bash scripts/cloudflare_project.sh
 
       - name: Shared password (only if BOOK_PASSWORD is set)
@@ -73,11 +75,18 @@ jobs:
       - name: Where to find it
         env:
           HOST: ${{ steps.project.outputs.pages_host }}
+          CUSTOM: ${{ steps.project.outputs.custom_host }}
         run: |
           {
             echo "### 📖 Published"
             echo ""
-            echo "**https://$HOST**"
+            if [ -n "$CUSTOM" ]; then
+              echo "**https://$CUSTOM** (a new address can take a few minutes to go live)"
+              echo ""
+              echo "also at https://$HOST"
+            else
+              echo "**https://$HOST**"
+            fi
             echo ""
             echo "Unlisted: anyone with the link can read it; search engines and AI crawlers are asked to stay away."
           } >> "$GITHUB_STEP_SUMMARY"

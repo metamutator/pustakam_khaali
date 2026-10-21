@@ -1,6 +1,6 @@
 # pustakam khaali: starter pack for UNLISTED books
 
-A template for books **anyone with the link can read**, such as books shared on a forum, without using any of your Cloudflare Access seats and without the yaksha.ink name. Each book gets its own repo and its own address, `<name>.pages.dev`.
+A template for books **anyone with the link can read**, such as books shared on a forum, without using any of your Cloudflare Access seats. Each book gets its own repo and its own address: `<name>.pages.dev`, with no yaksha.ink branding, or optionally `<name>.yaksha.ink` too.
 
 The book still asks search engines and AI crawlers to stay away, using `robots.txt`, a noindex header and a noindex tag. You can also add a **shared password** for the whole book.
 
@@ -26,6 +26,8 @@ The **Book publisher** token from `pustakam_taalam` works here too. If you'd rat
 |---|---|---|
 | Account | Cloudflare Pages | Edit |
 | Account | Account Settings | Read |
+| Zone (`yaksha.ink`) | Zone | Read *(only for the optional custom domain)* |
+| Zone (`yaksha.ink`) | DNS | Edit *(only for the optional custom domain)* |
 
 Keep it somewhere you can copy it from on your phone.
 
@@ -44,6 +46,21 @@ Keep it somewhere you can copy it from on your phone.
 3. **Name the book.** Open `_quarto.yml`, tap the pencil, change `title`, `subtitle` and `author`, then **Commit changes**. This starts a build.
 4. **Get the link.** Open the **Actions** tab and tap the running build. In 2–3 minutes it goes green, and the summary shows the link.
 5. **Write.** Go to `chapters/`, then **Add file → Create new file**. Name it `03-something.md` and start with a `# Chapter title` line. Commit, wait about two minutes, and refresh.
+
+---
+
+## Optional: on yaksha.ink instead of only pages.dev
+
+In the book's `publishing.yml`, set:
+
+```yaml
+domain: yaksha.ink
+```
+
+and commit. The next build also publishes the book at `<name>.yaksha.ink`, creating the DNS record for you, and it stays **unlocked**. The `pages.dev` address keeps working as well.
+
+- **AI bots:** on yaksha.ink, Cloudflare's **Block AI bots** switch (yaksha.ink → Security → Bots) can also apply to the book. That switch covers the whole domain.
+- **Private source, public book:** this works well with a **Private** repo, so the book is readable by link while its Markdown source stays private.
 
 ---
 
@@ -93,11 +110,16 @@ The red ❌ build has a message at the bottom saying what to fix:
 | `CLOUDFLARE_API_TOKEN secret is missing` | Step 2 above, then **Re-run jobs** |
 | `token is probably missing a permission` | Compare the token's permissions with the table above |
 | Red at "Build the book" | A typo in a chapter or `_quarto.yml`; the log line above the error names the file |
+| `project called '…' already exists` | Another book (or HCP2) already uses that name. Set a different `short-name:` in `publishing.yml` |
+| `already points somewhere else` | `<name>.yaksha.ink` is taken by another book; pick a different `short-name:` |
+| `Couldn't find … on this Cloudflare account` | Check `domain:` in `publishing.yml`, and that the token covers that zone |
 
 ## Making it a locked book later
 
 1. Copy `.github/workflows/publish.yml`, `scripts/` and `publishing.yml` from `pustakam_taalam` into the book's repo.
 2. Delete `functions/` and `password.js`.
 3. Commit.
+
+Keep the same `short-name`, so the existing Cloudflare project carries over.
 
 The address becomes `<name>.yaksha.ink`, and the old `pages.dev` address gets locked too.

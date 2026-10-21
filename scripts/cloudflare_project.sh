@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # ------------------------------------------------------------------
-# Makes sure the Cloudflare Pages project for this book exists, and
+# Makes sure the Cloudflare Pages project for this book exists (and,
+# if DOMAIN is set, its custom domain + DNS record), and
 # reports its address. Safe to run on every build.
 #
 # Needs: CLOUDFLARE_API_TOKEN, NAME
+# Optional: DOMAIN (also publish at NAME.DOMAIN)
 # Optional: CLOUDFLARE_ACCOUNT_ID (looked up from the token if blank)
 # ------------------------------------------------------------------
 set -euo pipefail
@@ -43,12 +45,52 @@ if [ -z "$ACC" ]; then
 fi
 output account_id "$ACC"
 
+# Each project records which repo created it (variable BOOK_REPO), so a
+# second book that happens to pick the same name can't publish over it.
+REPO="${GITHUB_REPOSITORY:-}"
+[ -n "$REPO" ] || fail "GITHUB_REPOSITORY not set."
+owner_of() { echo "$1" | jq -r '.result.deployment_configs.production.env_vars.BOOK_REPO.value // empty'; }
 proj=$(CF_ALLOW_404=1 cf GET "/accounts/$ACC/pages/projects/$NAME")
 if ! echo "$proj" | jq -e '.success == true' >/dev/null 2>&1; then
   echo "Creating Pages project '$NAME'…" >&2
-  proj=$(cf POST "/accounts/$ACC/pages/projects" \
-    "$(jq -n --arg n "$NAME" '{name: $n, production_branch: "main"}')")
+  cf POST "/accounts/$ACC/pages/projects" \
+    "$(jq -n --arg n "$NAME" --arg r "$REPO" '{name: $n, production_branch: "main",
+       deployment_configs: {production: {env_vars: {BOOK_REPO: {type: "plain_text", value: $r}}},
+                            preview:    {env_vars: {BOOK_REPO: {type: "plain_text", value: $r}}}}}')" >/dev/null
+  proj=$(cf GET "/accounts/$ACC/pages/projects/$NAME")
+  [ "$(owner_of "$proj")" = "$REPO" ] || fail "Created project '$NAME' but couldn't record its owner (BOOK_REPO). Please report this; not publishing."
+else
+  owner=$(owner_of "$proj")
+  if [ "$owner" != "$REPO" ]; then
+    fail "A Cloudflare Pages project called '$NAME' already exists${owner:+ and belongs to $owner}. To avoid publishing over another book, pick a different short-name in publishing.yml. (If it really is this book, set the variable BOOK_REPO = $REPO under Workers & Pages → $NAME → Settings → Variables and secrets.)"
+  fi
 fi
 SUB=$(echo "$proj" | jq -r '.result.subdomain // empty')
 [ -n "$SUB" ] || SUB="$NAME.pages.dev"
 output pages_host "$SUB"
+
+# --- Optional custom domain ----------------------------------------
+if [ -n "${DOMAIN:-}" ]; then
+  HOST="$NAME.$DOMAIN"
+  ZONE=$(cf GET "/zones?name=$DOMAIN" | jq -r '.result[0].id // empty')
+  [ -n "$ZONE" ] || fail "Couldn't find $DOMAIN on this Cloudflare account. Check 'domain:' in publishing.yml."
+
+  # Don't take over an address another book (or anything else) already uses.
+  recs=$(cf GET "/zones/$ZONE/dns_records?name=$HOST")
+  if [ "$(echo "$recs" | jq '.result | length')" != 0 ]; then
+    target=$(echo "$recs" | jq -r '.result[0].content')
+    [ "$target" = "$SUB" ] || fail "$HOST already points somewhere else ($target), maybe another book. Pick a different short-name in publishing.yml."
+  fi
+
+  doms=$(cf GET "/accounts/$ACC/pages/projects/$NAME/domains")
+  if ! echo "$doms" | jq -e --arg h "$HOST" '.result[] | select(.name == $h)' >/dev/null; then
+    echo "Adding custom domain $HOST…" >&2
+    cf POST "/accounts/$ACC/pages/projects/$NAME/domains" "$(jq -n --arg h "$HOST" '{name: $h}')" >/dev/null
+  fi
+  if [ "$(echo "$recs" | jq '.result | length')" = 0 ]; then
+    echo "Adding DNS record $HOST → $SUB…" >&2
+    cf POST "/zones/$ZONE/dns_records" "$(jq -n --arg h "$HOST" --arg s "$SUB" \
+      '{type: "CNAME", name: $h, content: $s, proxied: true, ttl: 1, comment: "Pages custom domain (added by book publish workflow)"}')" >/dev/null
+  fi
+  output custom_host "$HOST"
+fi

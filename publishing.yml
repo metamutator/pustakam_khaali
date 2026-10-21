@@ -5,3 +5,8 @@
 # If the name is already taken on Cloudflare, it adds a few letters
 # (e.g. mybook-3kq.pages.dev); the build summary shows the final link.
 short-name:
+
+# Optional: also publish at <short-name>.<domain>, e.g. yaksha.ink.
+# The domain must be on your Cloudflare account. Leave blank for
+# <short-name>.pages.dev only. The book stays unlocked either way.
+domain:
