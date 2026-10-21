@@ -1,0 +1,7 @@
+# Publishing settings for this book. Edit on your phone like any file.
+
+# Short name used in the web address: <short-name>.pages.dev
+# Letters, numbers and dashes. Leave blank to use this repo's name.
+# If the name is already taken on Cloudflare, it adds a few letters
+# (e.g. mybook-3kq.pages.dev); the build summary shows the final link.
+short-name:

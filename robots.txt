@@ -1,0 +1,3 @@
+# Please don't crawl or index this book (search engines, AI crawlers).
+User-agent: *
+Disallow: /

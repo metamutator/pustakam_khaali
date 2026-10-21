@@ -1,0 +1,77 @@
+# ==================================================================
+#  EDIT THESE for each new book
+# ==================================================================
+book:
+  title: "Working Title"
+  subtitle: "A subtitle, or delete this line"
+  author: "Your Name"
+  date: last-modified
+  date-format: "D MMMM YYYY"
+  output-file: book          # downloads are named book.epub
+  # To let others share and adapt the book, remove the # below:
+  # page-footer: "Shared under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)"
+
+  # Chapters: every .md file in chapters/ is listed automatically,
+  # in filename order (01-…, 02-…). Don't edit between the markers.
+  chapters:
+    - index.md
+    - whats-new.md
+    # >>> chapters (auto) >>>
+    # <<< chapters (auto) <<<
+
+  # Delete these two lines if you don't use citations.
+  appendices:
+    - references.qmd
+
+  downloads: [epub]
+  search: true
+  reader-mode: true
+  page-navigation: true
+
+# ==================================================================
+#  Usually no need to touch anything below
+# ==================================================================
+project:
+  type: book
+  output-dir: _book
+  pre-render: python3 scripts/list_chapters.py
+  resources:
+    - robots.txt     # asks crawlers to stay away
+    - _headers       # noindex header on every file (Cloudflare Pages)
+
+lang: en-GB
+number-sections: false
+
+# Citations: write [@key] or [@key, p. 12]; Chicago style turns each
+# into a footnote. Sources go in chapters/references.bib.
+bibliography: chapters/references.bib
+csl: chicago-notes-bibliography.csl
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    include-in-header:
+      - _includes/noindex.html   # keeps search engines and AI crawlers out
+      - _includes/fonts.html     # Literata + Noto Sans (Telugu, Tamil, Gurmukhi, Chinese)
+    toc: true
+    mainfont: "Literata, 'Noto Sans Telugu', 'Noto Sans Tamil', 'Noto Sans Gurmukhi', 'Noto Sans SC', Georgia, serif"
+    fontsize: 1.1em
+    linestretch: 1.6
+    css: styles.css
+
+    # --- Margin comments (optional) --------------------------------
+    # Readers highlight a passage and leave a note. Each reader needs a
+    # free hypothes.is account; make a PRIVATE group there and have them
+    # post in it (Hypothesis posts publicly by default). To switch on,
+    # remove the # from the next two lines:
+    # comments:
+    #   hypothesis: true
+
+  epub:
+    toc: true
+    css: styles.css
+    epub-fonts:
+      - fonts/CourierPrime-*.ttf
+    # cover-image: cover.jpg

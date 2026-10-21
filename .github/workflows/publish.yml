@@ -1,0 +1,84 @@
+# Builds the book and publishes it, UNLISTED, on every push to main:
+# anyone with the link can read it, but it asks search engines and AI
+# crawlers to stay away, and uses none of your Cloudflare Access seats.
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN   – required; see README for its permissions
+#   BOOK_PASSWORD          – optional; set it to put a shared password
+#                            on the whole book (delete it to remove)
+#   CLOUDFLARE_ACCOUNT_ID  – optional; only if your token sees >1 account
+
+name: Publish book
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # "Run workflow" button for a manual rebuild
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # The starter-pack repo itself is a template: only books made from it publish.
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the book
+        uses: actions/checkout@v4
+
+      - name: Check the Cloudflare token is set
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::Add the CLOUDFLARE_API_TOKEN secret (Settings → Secrets and variables → Actions → New repository secret), then re-run this workflow."
+            exit 1
+          fi
+
+      - name: Read publishing.yml
+        id: settings
+        run: python3 scripts/settings.py >> "$GITHUB_OUTPUT"
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Build the book (web + EPUB)
+        run: quarto render
+
+      - name: Make sure the Cloudflare Pages project exists
+        id: project
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NAME: ${{ steps.settings.outputs.name }}
+        run: bash scripts/cloudflare_project.sh
+
+      - name: Shared password (only if BOOK_PASSWORD is set)
+        env:
+          BOOK_PASSWORD: ${{ secrets.BOOK_PASSWORD }}
+        run: python3 scripts/set_password.py
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ steps.project.outputs.account_id }}
+          command: pages deploy _book --project-name=${{ steps.settings.outputs.name }} --branch=main --commit-dirty=true
+
+      - name: Where to find it
+        env:
+          HOST: ${{ steps.project.outputs.pages_host }}
+        run: |
+          {
+            echo "### 📖 Published"
+            echo ""
+            echo "**https://$HOST**"
+            echo ""
+            echo "Unlisted: anyone with the link can read it; search engines and AI crawlers are asked to stay away."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Published at https://$HOST"

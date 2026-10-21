@@ -1,0 +1,7 @@
+/.quarto/
+/_book/
+*_files/
+.DS_Store
+**/*.quarto_ipynb
+node_modules/
+.wrangler/

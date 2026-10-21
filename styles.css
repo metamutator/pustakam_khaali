@@ -1,0 +1,58 @@
+/* ------------------------------------------------------------------
+   Book typography for the web version (the EPUB is left to e-readers).
+   Only applies to pages under chapters/ (see chapters/_metadata.yml).
+   ------------------------------------------------------------------ */
+
+/* Justified text, hyphenated per `lang: en-GB` */
+.chapter #quarto-document-content > p,
+.chapter #quarto-document-content > blockquote p {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* Space between paragraphs (no first-line indents) */
+.chapter #quarto-document-content > p {
+  margin-bottom: 1.1em;
+}
+
+/* Scene break: centred asterisks instead of a rule */
+.chapter #quarto-document-content > hr {
+  border: 0;
+  opacity: 1;
+  margin: 2rem 0;
+  text-align: center;
+}
+.chapter #quarto-document-content > hr::after {
+  content: "*\2003*\2003*";
+}
+
+/* Drop cap on the chapter's first paragraph */
+.chapter #quarto-document-content > p:first-of-type {
+  display: flow-root;   /* a short paragraph still makes room for the cap */
+}
+.chapter #quarto-document-content > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.6em;
+  line-height: 0.8;
+  padding: 0.07em 0.08em 0 0;
+  font-weight: 600;
+}
+/* Browsers that support it (Safari, Chrome, Edge) align it to exactly 3 lines */
+@supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+  .chapter #quarto-document-content > p:first-of-type::first-letter {
+    float: none;
+    font-size: inherit;
+    line-height: inherit;
+    padding: 0 0.1em 0 0;
+    -webkit-initial-letter: 3;
+    initial-letter: 3;
+  }
+}
+
+/* Lines quoted from plays: write [words]{.play} in a chapter.
+   Also used by the EPUB; the PDF does the same in _filters/dropcap.lua. */
+.play {
+  font-family: "Courier Prime", "Courier New", Courier, monospace;
+  font-size: 0.92em;
+}

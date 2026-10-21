@@ -1,0 +1,5 @@
+# Applies to every chapter in this folder: switches on the book
+# typography in styles.css (justified text, drop cap, scene breaks).
+format:
+  html:
+    body-classes: chapter
