@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the book
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check the Cloudflare token is set
         env:
@@ -66,7 +66,7 @@ jobs:
         run: python3 scripts/set_password.py
 
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ steps.project.outputs.account_id }}
