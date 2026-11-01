@@ -1,6 +1,6 @@
 # pustakam khaali: starter pack for UNLISTED books
 
-A template for books **anyone with the link can read**, such as books shared on a forum, without using any of your Cloudflare Access seats. Each book gets its own repo and its own address: `<name>.pages.dev`, with no yaksha.ink branding, or optionally `<name>.<your_domain>` too.
+A template for books **anyone with the link can read**, such as books shared on a forum, without using any of your Cloudflare Access seats. Each book gets its own repo and its own address: `<name>.pages.dev`, with no personal domain branding, or optionally `<name>.<your_domain>` too.
 
 The book still asks search engines and AI crawlers to stay away, using `robots.txt`, a noindex header and a noindex tag. You can also add a **shared password** for the whole book.
 
