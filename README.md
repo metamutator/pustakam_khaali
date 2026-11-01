@@ -1,12 +1,10 @@
 # pustakam khaali: starter pack for UNLISTED books
 
-A template for books **anyone with the link can read**, such as books shared on a forum, without using any of your Cloudflare Access seats. Each book gets its own repo and its own address: `<name>.pages.dev`, with no yaksha.ink branding, or optionally `<name>.yaksha.ink` too.
+A template for books **anyone with the link can read**, such as books shared on a forum, without using any of your Cloudflare Access seats. Each book gets its own repo and its own address: `<name>.pages.dev`, with no yaksha.ink branding, or optionally `<name>.<your_domain>` too.
 
 The book still asks search engines and AI crawlers to stay away, using `robots.txt`, a noindex header and a noindex tag. You can also add a **shared password** for the whole book.
 
 You write Markdown files in `chapters/`. Every save to `main` rebuilds the web book and the EPUB and publishes them.
-
-For books only invited readers can open, use the sister template, `pustakam_taalam`.
 
 ---
 
@@ -20,7 +18,7 @@ This template repo is public, which is fine: it contains no secrets and no book 
 
 ### 2. A Cloudflare API token
 
-The **Book publisher** token from `pustakam_taalam` works here too. If you'd rather have a separate, smaller token, it needs:
+This installation needs:
 
 | Type | Permission | Access |
 |---|---|---|
@@ -54,12 +52,12 @@ Keep it somewhere you can copy it from on your phone.
 In the book's `publishing.yml`, set:
 
 ```yaml
-domain: yaksha.ink
+domain: [your domain]
 ```
 
-and commit. The next build also publishes the book at `<name>.yaksha.ink`, creating the DNS record for you, and it stays **unlocked**. The `pages.dev` address keeps working as well.
+and commit. The next build also publishes the book at `<name>.[your_domain]`, creating the DNS record for you, and it stays **unlocked**. The `pages.dev` address keeps working as well.
 
-- **AI bots:** on yaksha.ink, Cloudflare's **Block AI bots** switch (yaksha.ink → Security → Bots) can also apply to the book. That switch covers the whole domain.
+- **AI bots:** on your domain, Cloudflare's **Block AI bots** switch (domain → Security → Bots) can also apply to the book. That switch covers the whole domain.
 - **Private source, public book:** this works well with a **Private** repo, so the book is readable by link while its Markdown source stays private.
 
 ---
@@ -122,4 +120,4 @@ The red ❌ build has a message at the bottom saying what to fix:
 
 Keep the same `short-name`, so the existing Cloudflare project carries over.
 
-The address becomes `<name>.yaksha.ink`, and the old `pages.dev` address gets locked too.
+The address becomes `<name>.[your_domain]`, and the old `pages.dev` address gets locked too.
